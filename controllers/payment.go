@@ -1,35 +1,43 @@
 package controllers
 
 import (
-	"github.com/alexstoick/hello/models"
-	"github.com/go-martini/martini"
-	"github.com/jinzhu/gorm"
-	"github.com/martini-contrib/render"
+	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/gin-gonic/gin"
+	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/jinzhu/gorm"
+	"github.com/alexstoick/budgie-backend/models"
 	"strconv"
 )
 
-func GetPaymentBeneficiaries(r render.Render, db gorm.DB, params martini.Params) {
+func GetPaymentBeneficiaries(c *gin.Context) {
 	var payment models.Payment
 
-	err := db.Find(&payment, params["payment_id"]).Error
+	fake_db, _ := c.Get("db")
+	db := fake_db.(gorm.DB)
+
+	err := db.Find(&payment, c.Param("payment_id")).Error
 
 	if err != nil {
 		panic(err)
 	}
 
-	user_id, _ := strconv.ParseInt(params["id"], 10, 64)
+	user_id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+
 	v, err := payment.SourceID.Value()
 	if v != user_id {
-		r.JSON(404, map[string]string{"error": "Resource not available"})
+		c.JSON(404, map[string]string{"error": "Resource not available"})
 	} else {
+		c.JSON(200, payment)
 	}
 }
 
-func CreatePayment(r render.Render, db gorm.DB, paymentCreator models.PaymentCreator, params martini.Params) {
+func CreatePayment(c *gin.Context) {
+	var paymentCreator models.PaymentCreator
+	c.Bind(&paymentCreator)
 	paymentCreator.ParseBeneficiaryIds()
 	var payment models.Payment = paymentCreator.TransformToPayment()
 	payment.CreateBeneficiaries(paymentCreator.BeneficiaryIds)
-	payment.AddSource(db, params["id"])
+	fake_db, _ := c.Get("db")
+	db := fake_db.(gorm.DB)
+	payment.AddSource(db, c.Param("id"))
 	db.Create(&payment)
-	r.JSON(200, payment)
+	c.JSON(200, payment)
 }

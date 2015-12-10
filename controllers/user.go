@@ -1,28 +1,32 @@
 package controllers
 
 import (
-	"github.com/alexstoick/hello/models"
-	"github.com/go-martini/martini"
-	"github.com/jinzhu/gorm"
-	"github.com/martini-contrib/render"
+	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/gin-gonic/gin"
+	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/jinzhu/gorm"
+	"github.com/alexstoick/budgie-backend/models"
 )
 
-func IndexUsers(r render.Render, db gorm.DB) {
+func IndexUsers(c *gin.Context) {
 	var users []models.User
+	fake_db, _ := c.Get("db")
+	db := fake_db.(gorm.DB)
 	err := db.Find(&users).Error
 
 	if err != nil {
 		panic(err)
 	}
 
-	r.JSON(200, users)
+	c.JSON(200, users)
 }
 
-func GetUserPayments(r render.Render, db gorm.DB, params martini.Params) {
+func GetUserPayments(c *gin.Context) {
 	var payments []models.Payment
 	var user models.User
 
-	err := db.Find(&user, params["id"]).Error
+	fake_db, _ := c.Get("db")
+	db := fake_db.(gorm.DB)
+
+	err := db.Find(&user, c.Param("id")).Error
 
 	err = db.Model(&user).Preload("Beneficiaries").Preload("Beneficiaries.Beneficiary").Related(&payments, "SourceID").Error
 
@@ -30,5 +34,5 @@ func GetUserPayments(r render.Render, db gorm.DB, params martini.Params) {
 		panic(err)
 	}
 
-	r.JSON(200, payments)
+	c.JSON(200, payments)
 }

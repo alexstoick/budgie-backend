@@ -2,8 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"github.com/graphql-go/graphql"
-	"github.com/jinzhu/gorm"
+	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/jinzhu/gorm"
 	"strconv"
 	"strings"
 )
@@ -18,25 +17,10 @@ type Payment struct {
 
 type PaymentCreator struct {
 	Amount               float64 `form:"amount" json:"amount"`
-	BeneficiaryIdsString string  `form:"beneficiary_ids" json:"-"`
+	BeneficiaryIdsString string  `form:"beneficiary_ids" json:"dsadsadsa"`
 	BeneficiaryIds       []int64 `form:"-" json:"beneficiary_ids"`
 	SourceId             string  `form:"-"`
 }
-
-var paymentType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Payment",
-	Fields: graphql.Fields{
-		"id": &graphql.Field{
-			Type: graphql.Int,
-		},
-		"amount": &graphql.Field{
-			Type: graphql.Float,
-		},
-		"source": &graphql.Field{
-			Type: UserType,
-		},
-	},
-})
 
 func (payment *PaymentCreator) ParseBeneficiaryIds() {
 	splits := strings.Split(payment.BeneficiaryIdsString, ",")
