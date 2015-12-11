@@ -1,13 +1,20 @@
 package main
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"github.com/SermoDigital/jose/crypto"
+	"github.com/SermoDigital/jose/jws"
 	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/gin-gonic/gin"
 	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/jinzhu/gorm"
 	_ "github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/lib/pq"
 	"github.com/alexstoick/budgie-backend/controllers"
 	"github.com/alexstoick/budgie-backend/models"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 var db gorm.DB
@@ -66,6 +73,45 @@ func main() {
 	connectToDb()
 	autoMigrateModels()
 
+	var rsaPub interface{}
+	var rsaPriv *rsa.PrivateKey
+	var err error
+
+	claims := jws.Claims{}
+	claims.Set("test", "value")
+
+	// token := jws.NewJWT(claims, crypto.SigningMethodRS512)
+	token := jws.NewJWT(claims, crypto.SigningMethodHS256)
+
+	derBytes, err := ioutil.ReadFile(filepath.Join("keys", "sample_key.pub"))
+	if err != nil {
+		panic(err)
+	}
+	block, _ := pem.Decode(derBytes)
+
+	rsaPub, err = x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	der, err := ioutil.ReadFile(filepath.Join("keys", "sample_key.priv"))
+	if err != nil {
+		panic(err)
+	}
+	block2, _ := pem.Decode(der)
+
+	rsaPriv, err = x509.ParsePKCS1PrivateKey(block2.Bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("lol %v\n", rsaPub)
+	fmt.Printf("lol %v\n", rsaPriv)
+	// result, err := token.Serialize(rsaPriv)
+	key := []byte("abclololol")
+	result, err := token.Serialize(key)
+	fmt.Printf("lol %v %v", string(result), key)
+	return
 	router := gin.Default()
 
 	router.Use(DatabaseMapper)
