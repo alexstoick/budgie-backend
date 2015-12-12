@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -74,4 +75,34 @@ func AuthUser(c *gin.Context) {
 	} else {
 		c.JSON(401, map[string]interface{}{"error": "Wrong password"})
 	}
+}
+
+func ValidateAuthentication(c *gin.Context) {
+	token := c.Query("token")
+
+	token_byte := []byte(token)
+	result, err := jws.ParseJWT(token_byte)
+
+	if err != nil {
+		c.AbortWithStatus(400)
+		// c.JSON(400, map[string]interface{}{"error": "cannot parse token"})
+		return
+	}
+	var key = []byte(os.Getenv("JWT_SECRET"))
+
+	valid := result.Validate(key, crypto.SigningMethodHS512) == nil
+
+	if !valid {
+		c.AbortWithStatus(401) //, map[string]interface{}{"error": "invalid signature"})
+		return
+	}
+	userId := result.Claims().Get("userId").(float64)
+	paramId, _ := strconv.ParseFloat(c.Param("id"), 10)
+
+	fmt.Fprintf(os.Stdout, "%v\n%v\n", userId, c.Param("id"))
+	if userId != paramId {
+		c.AbortWithStatus(403) //, map[string]interface{}{"error": "wrong token"})
+		return
+	}
+	c.Next()
 }

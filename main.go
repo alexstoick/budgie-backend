@@ -47,6 +47,7 @@ func DatabaseMapper(c *gin.Context) {
 
 	c.Next()
 }
+
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -73,19 +74,24 @@ func main() {
 	router.Use(DatabaseMapper)
 	router.Use(CORSMiddleware())
 
-	router.GET("/users", controllers.IndexUsers)
-	router.POST("/users", controllers.CreateUser)
+	v1 := router.Group("v1/")
+	{
+		v1.GET("/users", controllers.IndexUsers)
+		v1.POST("/users", controllers.CreateUser)
 
-	router.POST("/auth", controllers.AuthUser)
-	router.GET("/verify_token", controllers.VerifyToken)
-	router.POST("/renew_token", controllers.RenewToken)
+		v1.POST("/auth", controllers.AuthUser)
+		v1.GET("/verify_token", controllers.VerifyToken)
+		v1.POST("/renew_token", controllers.RenewToken)
 
-	router.POST("/users/:id/payments", controllers.CreatePayment)
+		authentication := v1.Use(controllers.ValidateAuthentication)
 
-	router.GET("/users/:id/payments", controllers.GetUserPayments)
-	router.GET("/users/:id/payments/:payment_id", controllers.GetPaymentBeneficiaries)
+		authentication.POST("/users/:id/payments", controllers.CreatePayment)
 
-	port = ":" + os.Getenv("PORT")
+		authentication.GET("/users/:id/payments", controllers.GetUserPayments)
+		authentication.GET("/users/:id/payments/:payment_id", controllers.GetPaymentBeneficiaries)
+	}
+
+	port := ":" + os.Getenv("PORT")
 
 	router.Run(port)
 }
