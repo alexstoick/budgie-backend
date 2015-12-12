@@ -2,7 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm"
 	"strconv"
 	"strings"
 )

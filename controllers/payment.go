@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/gin-gonic/gin"
-	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/jinzhu/gorm"
 	"github.com/alexstoick/budgie-backend/models"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"strconv"
 )
 
