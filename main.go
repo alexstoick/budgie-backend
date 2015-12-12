@@ -79,7 +79,7 @@ func main() {
 		v1.GET("/users", controllers.IndexUsers)
 		v1.POST("/users", controllers.CreateUser)
 
-		v1.POST("/auth", controllers.AuthUser)
+		v1.POST("/login", controllers.AuthUser)
 		v1.GET("/verify_token", controllers.VerifyToken)
 		v1.POST("/renew_token", controllers.RenewToken)
 
