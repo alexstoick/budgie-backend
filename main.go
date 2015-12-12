@@ -6,6 +6,7 @@ import (
 	"github.com/alexstoick/budgie-backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"os"
 )
@@ -65,9 +66,7 @@ func CORSMiddleware() gin.HandlerFunc {
 func main() {
 	connectToDb()
 	autoMigrateModels()
-
-	// result, _ := jws.ParseJWT(serialized_res)
-	// fmt.Printf("Validation with known secret: %v", result.Validate(key, crypto.SigningMethodHS512) == nil)
+	godotenv.Load()
 
 	router := gin.Default()
 
@@ -75,19 +74,18 @@ func main() {
 	router.Use(CORSMiddleware())
 
 	router.GET("/users", controllers.IndexUsers)
-
 	router.POST("/users", controllers.CreateUser)
 
 	router.POST("/auth", controllers.AuthUser)
+	router.GET("/verify_token", controllers.VerifyToken)
+	router.POST("/renew_token", controllers.RenewToken)
 
 	router.POST("/users/:id/payments", controllers.CreatePayment)
 
 	router.GET("/users/:id/payments", controllers.GetUserPayments)
-
 	router.GET("/users/:id/payments/:payment_id", controllers.GetPaymentBeneficiaries)
-	port := ":3000"
-	if os.Getenv("PORT") != "" {
-		port = ":" + os.Getenv("PORT")
-	}
+
+	port = ":" + os.Getenv("PORT")
+
 	router.Run(port)
 }
