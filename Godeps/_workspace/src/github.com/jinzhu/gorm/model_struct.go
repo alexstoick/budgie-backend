@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alexstoick/budgie-backend/Godeps/_workspace/src/github.com/qor/inflection"
+	"github.com/qor/inflection"
 )
 
 var modelStructs = map[reflect.Type]*ModelStruct{}
