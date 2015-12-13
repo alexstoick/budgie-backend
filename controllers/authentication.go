@@ -18,7 +18,7 @@ func RenewToken(c *gin.Context) {
 	token_byte := []byte(token)
 	result, err := jws.ParseJWT(token_byte)
 	if err != nil {
-		c.JSON(400, map[string]interface{}{"error": "cannot parse token"})
+		c.JSON(400, gin.H{"error": "cannot parse token"})
 		return
 	}
 
@@ -31,14 +31,14 @@ func RenewToken(c *gin.Context) {
 
 	valid := result.Validate(key, crypto.SigningMethodHS512) == nil
 	if !valid {
-		c.JSON(401, map[string]interface{}{"error": "invalid signature"})
+		c.JSON(401, gin.H{"error": "invalid signature"})
 	} else {
 		issuedAt, _ := result.Claims().IssuedAt()
 		claims := jws.Claims(result.Claims())
 		newJWT := jws.NewJWT(claims, crypto.SigningMethodHS512)
 		fmt.Fprintf(os.Stdout, "%f\n", issuedAt)
 		serialized_res, _ := newJWT.Serialize(key)
-		c.JSON(200, map[string]interface{}{"token": string(serialized_res)})
+		c.JSON(200, gin.H{"token": string(serialized_res)})
 	}
 }
 
@@ -52,28 +52,26 @@ func VerifyToken(c *gin.Context) {
 
 	valid := result.Validate(key, crypto.SigningMethodHS512) == nil
 
-	c.JSON(200, map[string]interface{}{"valid": valid})
+	c.JSON(200, gin.H{"valid": valid})
 }
 
 func AuthUser(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
 
-	var testuser models.User
-	testuser.Username = username
-	testuser.HashPassword(password)
+	var userForm models.UserForm
+
+	c.BindJSON(&userForm)
 
 	var user models.User
 
 	fake_db, _ := c.Get("db")
 	db := fake_db.(gorm.DB)
 
-	db.Find(&user, models.User{Username: username})
+	db.Find(&user, models.User{Username: userForm.Username})
 
-	if user.IsMatchingPassword(password) {
-		c.JSON(200, map[string]interface{}{"token": user.GenerateJWT()})
+	if user.IsMatchingPassword(userForm.Password) {
+		c.JSON(200, gin.H{"token": user.GenerateJWT()})
 	} else {
-		c.JSON(401, map[string]interface{}{"error": "Wrong password"})
+		c.JSON(401, gin.H{"error": "Wrong password"})
 	}
 }
 
@@ -84,8 +82,7 @@ func ValidateAuthentication(c *gin.Context) {
 	result, err := jws.ParseJWT(token_byte)
 
 	if err != nil {
-		c.AbortWithStatus(400)
-		// c.JSON(400, map[string]interface{}{"error": "cannot parse token"})
+		c.JSON(400, gin.H{"error": "cannot parse token"})
 		return
 	}
 	var key = []byte(os.Getenv("JWT_SECRET"))
@@ -93,7 +90,7 @@ func ValidateAuthentication(c *gin.Context) {
 	valid := result.Validate(key, crypto.SigningMethodHS512) == nil
 
 	if !valid {
-		c.AbortWithStatus(401) //, map[string]interface{}{"error": "invalid signature"})
+		c.JSON(401, gin.H{"error": "invalid signature"})
 		return
 	}
 	userId := result.Claims().Get("userId").(float64)
@@ -101,7 +98,7 @@ func ValidateAuthentication(c *gin.Context) {
 
 	fmt.Fprintf(os.Stdout, "%v\n%v\n", userId, c.Param("id"))
 	if userId != paramId {
-		c.AbortWithStatus(403) //, map[string]interface{}{"error": "wrong token"})
+		c.JSON(403, gin.H{"error": "wrong token"})
 		return
 	}
 	c.Next()

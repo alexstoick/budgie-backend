@@ -23,7 +23,7 @@ func GetPaymentBeneficiaries(c *gin.Context) {
 
 	v, err := payment.SourceID.Value()
 	if v != user_id {
-		c.JSON(404, map[string]string{"error": "Resource not available"})
+		c.JSON(404, gin.H{"error": "Resource not available"})
 	} else {
 		c.JSON(200, payment)
 	}

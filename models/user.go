@@ -18,6 +18,11 @@ type User struct {
 	Payments       []Payment `json:"-"`
 }
 
+type UserForm struct {
+	Username string `form: "username"`
+	Password string `form: "password"`
+}
+
 func (user *User) HashPassword(password string) {
 	result, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
 	user.HashedPassword = string(result)
