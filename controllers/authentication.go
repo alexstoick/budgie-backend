@@ -89,6 +89,7 @@ func AuthUser(c *gin.Context) {
 }
 
 func ValidateAuthentication(c *gin.Context) {
+	fmt.Fprintf(os.Stdout, "%v", c.Request)
 	header := c.Request.Header.Get("Authorization")
 	split_header := strings.Split(header, " ")
 	token := split_header[len(split_header)-1]
