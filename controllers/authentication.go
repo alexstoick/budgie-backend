@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -88,7 +89,9 @@ func AuthUser(c *gin.Context) {
 }
 
 func ValidateAuthentication(c *gin.Context) {
-	token := c.Query("token")
+	header := c.Request.Header.Get("Authorization")
+	split_header := strings.Split(header, " ")
+	token := split_header[len(split_header)-1]
 
 	token_byte := []byte(token)
 	result, err := jws.ParseJWT(token_byte)
