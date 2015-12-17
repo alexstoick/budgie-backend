@@ -85,10 +85,10 @@ func main() {
 
 		authentication := v1.Use(controllers.ValidateAuthentication)
 
-		authentication.POST("/users/:id/payments", controllers.CreatePayment)
+		authentication.POST("/users/me/payments", controllers.CreatePayment)
 
-		authentication.GET("/users/:id/payments", controllers.GetUserPayments)
-		authentication.GET("/users/:id/payments/:payment_id", controllers.GetPaymentBeneficiaries)
+		authentication.GET("/users/me/payments", controllers.GetUserPayments)
+		authentication.GET("/users/me/payments/:payment_id", controllers.GetPaymentBeneficiaries)
 	}
 
 	port := ":" + os.Getenv("PORT")

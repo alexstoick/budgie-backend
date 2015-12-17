@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -108,14 +107,6 @@ func ValidateAuthentication(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	userId := result.Claims().Get("userId").(float64)
-	paramId, _ := strconv.ParseFloat(c.Param("id"), 10)
 
-	fmt.Fprintf(os.Stdout, "%v\n%v\n", userId, c.Param("id"))
-	if userId != paramId {
-		c.JSON(WrongTokenError.statuscode, WrongTokenError.body)
-		c.Abort()
-		return
-	}
 	c.Next()
 }
