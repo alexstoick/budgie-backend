@@ -12,13 +12,24 @@ import (
 	"time"
 )
 
+type JSONResponse struct {
+	statuscode int
+	body       gin.H
+}
+
+var TokenParseError JSONResponse = JSONResponse{400, gin.H{"error": "Cannot Parse Token"}}
+var TokenSignatureError JSONResponse = JSONResponse{401, gin.H{"error": "Invalid Signature"}}
+var WrongPasswordError JSONResponse = JSONResponse{401, gin.H{"error": "Wrong Password"}}
+var WrongTokenError JSONResponse = JSONResponse{403, gin.H{"error": "Wrong Token"}}
+
 func RenewToken(c *gin.Context) {
 	token := c.PostForm("token")
 
 	token_byte := []byte(token)
 	result, err := jws.ParseJWT(token_byte)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "cannot parse token"})
+		c.JSON(TokenParseError.statuscode, TokenParseError.body)
+		c.Abort()
 		return
 	}
 
@@ -31,7 +42,8 @@ func RenewToken(c *gin.Context) {
 
 	valid := result.Validate(key, crypto.SigningMethodHS512) == nil
 	if !valid {
-		c.JSON(401, gin.H{"error": "invalid signature"})
+		c.JSON(TokenSignatureError.statuscode, TokenSignatureError.body)
+		c.Abort()
 	} else {
 		issuedAt, _ := result.Claims().IssuedAt()
 		claims := jws.Claims(result.Claims())
@@ -71,7 +83,8 @@ func AuthUser(c *gin.Context) {
 	if user.IsMatchingPassword(userForm.Password) {
 		c.JSON(200, gin.H{"token": user.GenerateJWT()})
 	} else {
-		c.JSON(401, gin.H{"error": "Wrong password"})
+		c.JSON(WrongPasswordError.statuscode, WrongPasswordError.body)
+		c.Abort()
 	}
 }
 
@@ -82,7 +95,8 @@ func ValidateAuthentication(c *gin.Context) {
 	result, err := jws.ParseJWT(token_byte)
 
 	if err != nil {
-		c.JSON(400, gin.H{"error": "cannot parse token"})
+		c.JSON(TokenParseError.statuscode, TokenParseError.body)
+		c.Abort()
 		return
 	}
 	var key = []byte(os.Getenv("JWT_SECRET"))
@@ -90,7 +104,8 @@ func ValidateAuthentication(c *gin.Context) {
 	valid := result.Validate(key, crypto.SigningMethodHS512) == nil
 
 	if !valid {
-		c.JSON(401, gin.H{"error": "invalid signature"})
+		c.JSON(TokenSignatureError.statuscode, TokenSignatureError.body)
+		c.Abort()
 		return
 	}
 	userId := result.Claims().Get("userId").(float64)
@@ -98,7 +113,8 @@ func ValidateAuthentication(c *gin.Context) {
 
 	fmt.Fprintf(os.Stdout, "%v\n%v\n", userId, c.Param("id"))
 	if userId != paramId {
-		c.JSON(403, gin.H{"error": "wrong token"})
+		c.JSON(WrongTokenError.statuscode, WrongTokenError.body)
+		c.Abort()
 		return
 	}
 	c.Next()
