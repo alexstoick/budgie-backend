@@ -10,10 +10,10 @@ import (
 
 type User struct {
 	ID             int       `json:"id" gorm:"primary_key"`
-	FirstName      string    `form:"firstName" json:"firstName"`
-	LastName       string    `form:"lastName" json:"lastName"`
-	Username       string    `form:"username" json:"username"`
-	Email          string    `form:"email"  json:"email"`
+	FirstName      string    `form:"firstName" json:"firstName,omitempty"`
+	LastName       string    `form:"lastName" json:"lastName,omitempty"`
+	Username       string    `form:"username" json:"username,omitempty"`
+	Email          string    `form:"email"  json:"email,omitempty"`
 	HashedPassword string    `json:"-"`
 	Payments       []Payment `json:"-"`
 }

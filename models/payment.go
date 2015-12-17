@@ -3,8 +3,6 @@ package models
 import (
 	"database/sql"
 	"github.com/jinzhu/gorm"
-	"strconv"
-	"strings"
 )
 
 type Payment struct {
@@ -16,19 +14,14 @@ type Payment struct {
 }
 
 type PaymentCreator struct {
-	Amount               float64 `form:"amount" json:"amount"`
-	BeneficiaryIdsString string  `form:"beneficiary_ids" json:"dsadsadsa"`
-	BeneficiaryIds       []int64 `form:"-" json:"beneficiary_ids"`
-	SourceId             string  `form:"-"`
+	Amount         float64          `form:"amount" json:"amount"`
+	SourceId       string           `form:"-"`
+	PaymentDetails []PaymentDetails `form:"details" json:"details"`
 }
 
-func (payment *PaymentCreator) ParseBeneficiaryIds() {
-	splits := strings.Split(payment.BeneficiaryIdsString, ",")
-
-	for _, split := range splits {
-		converted, _ := strconv.ParseInt(split, 10, 64)
-		payment.BeneficiaryIds = append(payment.BeneficiaryIds, converted)
-	}
+type PaymentDetails struct {
+	UserId int64   `form:"userId" json:"userId"`
+	Amount float64 `form:"amount" json:"amount"`
 }
 
 func (payment *Payment) AddSource(db gorm.DB, source_id string) {
@@ -42,15 +35,14 @@ func (paymentCreator PaymentCreator) TransformToPayment() Payment {
 	return p
 }
 
-func (payment *Payment) CreateBeneficiaries(BeneficiaryIds []int64) {
-	count := len(BeneficiaryIds)
-	for _, beneficiary_id := range BeneficiaryIds {
+func (payment *Payment) CreateBeneficiaries(paymentDetails []PaymentDetails) {
+	for _, paymentDetail := range paymentDetails {
 		payment.Beneficiaries = append(
 			payment.Beneficiaries,
 			Beneficiary{
-				BeneficiaryID: sql.NullInt64{Int64: beneficiary_id, Valid: true},
+				BeneficiaryID: sql.NullInt64{Int64: paymentDetail.UserId, Valid: true},
 				PaymentID:     sql.NullInt64{Int64: int64(payment.ID), Valid: true},
-				Amount:        payment.Amount / float64(count),
+				Amount:        paymentDetail.Amount,
 			},
 		)
 	}

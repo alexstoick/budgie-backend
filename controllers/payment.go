@@ -31,10 +31,9 @@ func GetPaymentBeneficiaries(c *gin.Context) {
 
 func CreatePayment(c *gin.Context) {
 	var paymentCreator models.PaymentCreator
-	c.Bind(&paymentCreator)
-	paymentCreator.ParseBeneficiaryIds()
-	var payment models.Payment = paymentCreator.TransformToPayment()
-	payment.CreateBeneficiaries(paymentCreator.BeneficiaryIds)
+	c.BindJSON(&paymentCreator)
+	payment := paymentCreator.TransformToPayment()
+	payment.CreateBeneficiaries(paymentCreator.PaymentDetails)
 	fake_db, _ := c.Get("db")
 	db := fake_db.(gorm.DB)
 	payment.AddSource(db, c.Param("id"))
