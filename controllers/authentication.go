@@ -89,7 +89,6 @@ func AuthUser(c *gin.Context) {
 }
 
 func ValidateAuthentication(c *gin.Context) {
-	fmt.Fprintf(os.Stdout, "%v", c.Request)
 	header := c.Request.Header.Get("Authorization")
 	split_header := strings.Split(header, " ")
 
@@ -119,6 +118,7 @@ func ValidateAuthentication(c *gin.Context) {
 		c.Abort()
 		return
 	}
+	c.Set("userId", result.Claims().Get("userId"))
 
 	c.Next()
 }

@@ -24,7 +24,7 @@ type PaymentDetails struct {
 	Amount float64 `form:"amount" json:"amount"`
 }
 
-func (payment *Payment) AddSource(db gorm.DB, source_id string) {
+func (payment *Payment) AddSource(db gorm.DB, source_id float64) {
 	db.Find(&payment.Source, source_id)
 }
 

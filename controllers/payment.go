@@ -36,7 +36,10 @@ func CreatePayment(c *gin.Context) {
 	payment.CreateBeneficiaries(paymentCreator.PaymentDetails)
 	fake_db, _ := c.Get("db")
 	db := fake_db.(gorm.DB)
-	payment.AddSource(db, c.Param("id"))
+	userId, _ := c.Get("userId")
+	payment.AddSource(db, userId.(float64))
 	db.Create(&payment)
+
+	db.Model(&payment).Preload("Beneficiaries").Preload("Beneficiaries.Beneficiary")
 	c.JSON(200, payment)
 }

@@ -37,8 +37,9 @@ func GetUserPayments(c *gin.Context) {
 
 	fake_db, _ := c.Get("db")
 	db := fake_db.(gorm.DB)
+	userId, _ := c.Get("userId")
 
-	err := db.Find(&user, c.Param("id")).Error
+	err := db.Find(&user, userId).Error
 
 	err = db.Model(&user).Preload("Beneficiaries").Preload("Beneficiaries.Beneficiary").Related(&payments, "SourceID").Error
 
