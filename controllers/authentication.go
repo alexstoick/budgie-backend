@@ -92,7 +92,14 @@ func ValidateAuthentication(c *gin.Context) {
 	fmt.Fprintf(os.Stdout, "%v", c.Request)
 	header := c.Request.Header.Get("Authorization")
 	split_header := strings.Split(header, " ")
-	token := split_header[len(split_header)-1]
+
+	var token string
+	if len(split_header) == 2 {
+		token = split_header[1]
+	} else {
+		token = c.Query("token")
+	}
+	fmt.Fprintf(os.Stdout, "\n%v\n", token)
 
 	token_byte := []byte(token)
 	result, err := jws.ParseJWT(token_byte)
