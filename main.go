@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 	"os"
 )
 
@@ -22,9 +22,14 @@ func connectToDb() {
 	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
 	var err error
 
+	fmt.Fprintf(os.Stdout, "fhjdsjfhds")
 	if os.Getenv("DATABASE_URL") != "" {
-		dbinfo = os.Getenv("DATABASE_URL")
+		fmt.Fprintf(os.Stdout, "fhjdsjfhds")
+		url := os.Getenv("DATABASE_URL")
+		dbinfo, _ := pq.ParseURL(url)
+		dbinfo += " sslmode=disable"
 	}
+	fmt.Fprintf(os.Stdout, "%s", dbinfo)
 
 	db, err = gorm.Open("postgres", dbinfo)
 	handleError(err)
