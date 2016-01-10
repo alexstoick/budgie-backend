@@ -12,6 +12,6 @@ data:
   volumes:
     - ~/Library/Application\ Support/Postgres/var-9.5-lol/
 db:
-  image: postgres
+  build: ./db/
   volumes_from:
     - data
