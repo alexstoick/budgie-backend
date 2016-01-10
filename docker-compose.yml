@@ -12,6 +12,8 @@ data:
   volumes:
     - ~/Library/Application\ Support/Postgres/var-9.5-lol/
 db:
-  build: ./db/
+  image: postgres
+  environment:
+    - POSTGRES_DB=budgie_development
   volumes_from:
     - data
