@@ -44,14 +44,15 @@ func RenewToken(c *gin.Context) {
 	if !valid {
 		c.JSON(TokenSignatureError.statuscode, TokenSignatureError.body)
 		c.Abort()
-	} else {
-		issuedAt, _ := result.Claims().IssuedAt()
-		claims := jws.Claims(result.Claims())
-		newJWT := jws.NewJWT(claims, crypto.SigningMethodHS512)
-		fmt.Fprintf(os.Stdout, "%f\n", issuedAt)
-		serialized_res, _ := newJWT.Serialize(key)
-		c.JSON(200, gin.H{"token": string(serialized_res)})
+		return
 	}
+
+	issuedAt, _ = result.Claims().IssuedAt()
+	claims := jws.Claims(result.Claims())
+	newJWT := jws.NewJWT(claims, crypto.SigningMethodHS512)
+	fmt.Fprintf(os.Stdout, "%f\n", issuedAt)
+	serialized_res, _ := newJWT.Serialize(key)
+	c.JSON(200, gin.H{"token": string(serialized_res)})
 }
 
 func VerifyToken(c *gin.Context) {
@@ -80,12 +81,13 @@ func AuthUser(c *gin.Context) {
 
 	db.Find(&user, models.User{Username: userForm.Username})
 
-	if user.IsMatchingPassword(userForm.Password) {
-		c.JSON(200, gin.H{"token": user.GenerateJWT()})
-	} else {
+	if !user.IsMatchingPassword(userForm.Password) {
 		c.JSON(WrongPasswordError.statuscode, WrongPasswordError.body)
 		c.Abort()
+		return
 	}
+
+	c.JSON(200, gin.H{"token": user.GenerateJWT()})
 }
 
 func ValidateAuthentication(c *gin.Context) {

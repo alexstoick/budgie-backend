@@ -22,14 +22,15 @@ func connectToDb() {
 	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
 	var err error
 
-	fmt.Fprintf(os.Stdout, "fhjdsjfhds")
+	fmt.Fprintf(os.Stdout, "db-url %s\n", os.Getenv("DATABASE_URL"))
+
 	if os.Getenv("DATABASE_URL") != "" {
-		fmt.Fprintf(os.Stdout, "fhjdsjfhds")
 		url := os.Getenv("DATABASE_URL")
-		dbinfo, _ := pq.ParseURL(url)
-		dbinfo += " sslmode=disable"
+		dbinfo, _ = pq.ParseURL(url)
+		dbinfo += " dbname=" + DB_NAME + " sslmode=disable"
+		fmt.Fprintf(os.Stdout, "in ifcase - %s\n", dbinfo)
 	}
-	fmt.Fprintf(os.Stdout, "%s", dbinfo)
+	fmt.Fprintf(os.Stdout, "%s\n", dbinfo)
 
 	db, err = gorm.Open("postgres", dbinfo)
 	handleError(err)
