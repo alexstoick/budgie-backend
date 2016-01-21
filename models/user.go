@@ -16,6 +16,7 @@ type User struct {
 	Email          string    `form:"email"  json:"email,omitempty"`
 	HashedPassword string    `json:"-"`
 	Payments       []Payment `json:"-"`
+	CreatedAt      time.Time `json:"-"`
 }
 
 type UserForm struct {

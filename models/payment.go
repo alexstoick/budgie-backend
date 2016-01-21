@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type Payment struct {
@@ -11,6 +12,7 @@ type Payment struct {
 	Source        User          `json:"-"`
 	SourceID      sql.NullInt64 `json:"-"`
 	Beneficiaries []Beneficiary `json:"beneficiaries,omitempty"`
+	CreatedAt     time.Time     `json:"created_at"`
 }
 
 type PaymentCreator struct {

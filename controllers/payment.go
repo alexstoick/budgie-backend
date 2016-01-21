@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"strconv"
+	"time"
 )
 
 func GetPaymentBeneficiaries(c *gin.Context) {
@@ -38,6 +39,7 @@ func CreatePayment(c *gin.Context) {
 	db := fake_db.(gorm.DB)
 	userId, _ := c.Get("userId")
 	payment.AddSource(db, userId.(float64))
+	payment.CreatedAt = time.Now()
 	db.Create(&payment)
 
 	db.Model(&payment).Preload("Beneficiaries").Preload("Beneficiaries.Beneficiary")

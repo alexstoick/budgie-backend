@@ -1,6 +1,9 @@
 package models
 
-import "database/sql"
+import (
+	"database/sql"
+	"time"
+)
 
 type Beneficiary struct {
 	ID            int           `json:"-" gorm:"primary_key"`
@@ -9,4 +12,5 @@ type Beneficiary struct {
 	Beneficiary   User          `json:"user,omitempty"`
 	BeneficiaryID sql.NullInt64 `json:"-"`
 	Amount        float64       `json:"amount"`
+	CreatedAt     time.Time     `json:"-"`
 }
